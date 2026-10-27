@@ -76,3 +76,29 @@ Chọn **Katakana** ở đầu trang để chuyển cả Quiz, bảng chữ, hư
 - Có cẩm nang và 5 cặp dễ nhầm: シ/ツ, ソ/ン, ク/ケ, ヌ/ス, ワ/ウ.
 - Dữ liệu Hiragana cũ vẫn giữ ở `japanese-master-v1`; Katakana dùng `japanese-master-katakana-v1`. Điểm, chuỗi đúng, ngày luyện và lịch ôn độc lập. Đặt lại chỉ tác động bảng đang chọn; bản sao JSON ghi rõ bảng chữ trong tên tệp.
 - Khi không thể lưu localStorage, chuyển bảng vẫn giữ tiến độ trong phiên đang mở; đóng hoặc tải lại trang có thể mất dữ liệu chưa lưu.
+
+## Forgotten Kana City — key visual
+
+Giao diện dùng bộ ảnh gốc trong `design/forgotten-kana-city/` và ảnh WebP tối ưu trong `src/assets/` (desktop ~158 KiB, mobile ~184 KiB, tiền cảnh ~74 KiB). `src/city-theme.css` định nghĩa màu, lớp cảnh và responsive; `src/city-effects.js` quản lý chuyển động độc lập với tiến độ học.
+
+- Nút **Hiệu ứng: Bật/Tắt** ở header lưu bằng khóa `japanese-master-effects`. Cài đặt giảm chuyển động của hệ điều hành luôn được ưu tiên.
+- Desktop dùng parallax tối đa 5 px/10 px; rAF chỉ được yêu cầu khi con trỏ thay đổi, không có vòng lặp chạy liên tục. 12 hạt tro nằm sau nội dung ở mép màn hình.
+- Điện thoại/tablet nhỏ dùng ảnh dọc, không parallax, tiền cảnh hoặc hạt. Tắt hiệu ứng hoặc ẩn tab dừng chuyển động trang trí.
+- Phản hồi đúng/sai vẫn hoạt động khi tắt hiệu ứng. Hoàn thành mục tiêu chỉ được thông báo lúc vượt mốc, có khóa chống phát lại riêng theo ngày và bảng chữ.
+- Toàn bộ dữ liệu và khóa tiến độ cũ được giữ nguyên. Lớp cảnh có `aria-hidden` và `pointer-events: none`.
+
+Kiểm thử trình duyệt mở rộng nằm trong `tests/city-browser.cjs`. Cài Playwright vào môi trường kiểm thử riêng nếu cần, khởi động app, rồi chạy:
+
+```sh
+PLAYWRIGHT_MODULE=/path/to/playwright APP_TEST_URL=http://127.0.0.1:5173 node tests/city-browser.cjs
+```
+
+`CHROMIUM_PATH` có thể chỉ định Chromium; mặc định `/usr/bin/chromium`. Bài kiểm thử chụp ảnh desktop/mobile vào `review/`, kiểm tra chuyển bảng, Enter, trạng thái lỗi, lưu tiến độ, export/reset, reduced motion, listener không bị lặp và mục tiêu ngày. `npm test` vẫn chạy 16 kiểm thử dữ liệu/logic không cần trình duyệt.
+
+### Hover và hiện dần khi cuộn
+
+Các khối thống kê, mục tiêu, cẩm nang và lựa chọn bảng chữ sáng hơn, nâng 3 px và phóng nhẹ 1,2% khi dùng chuột. Khối Quiz, bảng kana và ô chữ chỉ tăng độ sáng/viền để chữ và ô nhập không thay đổi kích thước. Thao tác này không làm đổi vị trí bố cục.
+
+Những khối nằm dưới màn hình hiện dần khi cuộn đến bằng IntersectionObserver (550 ms desktop, 380 ms màn hình nhỏ). Nội dung đang có trong màn hình hiện ngay; mỗi khối chỉ xuất hiện một lần trong phiên, kể cả khi đổi bảng chữ. Observer cũ được ngắt khi render lại. Khi dùng bàn phím, focus sẽ làm lộ khối tương ứng ngay; tắt hiệu ứng hoặc bật giảm chuyển động hiển thị tất cả nội dung tức thì. Trình duyệt không hỗ trợ IntersectionObserver cũng hiển thị toàn bộ nội dung.
+
+Kiểm tra riêng chuyển động: `PLAYWRIGHT_MODULE=/path/to/playwright APP_TEST_URL=http://127.0.0.1:4173 node tests/city-reveal-browser.cjs`.

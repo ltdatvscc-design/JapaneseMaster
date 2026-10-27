@@ -6,7 +6,7 @@ const dist = path.join(root, 'dist');
 let html = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
 function dataUrl(asset) {
   const ext = path.extname(asset);
-  const mime = { '.woff2': 'font/woff2', '.woff': 'font/woff', '.svg': 'image/svg+xml' }[ext];
+  const mime = { '.woff2': 'font/woff2', '.woff': 'font/woff', '.svg': 'image/svg+xml', '.webp': 'image/webp' }[ext];
   if (!mime) throw new Error(`Unsupported asset: ${asset}`);
   return `data:${mime};base64,${fs.readFileSync(path.join(dist, asset)).toString('base64')}`;
 }

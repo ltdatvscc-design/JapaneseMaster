@@ -1,0 +1,25 @@
+{
+  "city-desktop.png": {
+    "width": 1672,
+    "height": 941,
+    "mode": "RGB",
+    "bytes": 2272242
+  },
+  "city-mobile.png": {
+    "width": 940,
+    "height": 1672,
+    "mode": "RGB",
+    "bytes": 2496580
+  },
+  "city-foreground.png": {
+    "width": 1672,
+    "height": 941,
+    "mode": "RGBA",
+    "bytes": 314353,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_fraction": 0.923
+  }
+}

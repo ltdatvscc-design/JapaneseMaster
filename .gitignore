@@ -2,3 +2,6 @@ node_modules/
 dist/
 *.local
 .DS_Store
+
+# Download bundles are derived from the design source files.
+design/*-kit.zip

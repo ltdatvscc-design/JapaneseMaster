@@ -8,12 +8,15 @@ import '@fontsource/be-vietnam-pro/vietnamese-600.css';
 import '@fontsource/be-vietnam-pro/vietnamese-700.css';
 import './fonts.css';
 import './style.css';
+import './city-theme.css';
+import { createCityEffects } from './city-effects.js';
 import * as hiragana from './data.js';
 import * as katakana from './katakana.js';
 import { loadProgress, checkAnswer, recordAnswer, pickQuestion, isWeak, emptyProgress } from './engine.js';
 const icons={grid:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',keyboard:'<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M8 16h8"/>',book:'<path d="M12 5v16M12 5C8 2 4 3 2 4v16c4-2 7-1 10 1 3-2 6-3 10-1V4c-2-1-6-2-10 1Z"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',chevron:'<path d="m9 5 7 7-7 7"/>',check:'<path d="m5 12 4 4L19 6"/>',spark:'<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z"/>',target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',flame:'<path d="M13 3c2 5-3 5-2 9 2 0 3-2 4-4 5 4 5 12-3 13C2 21 3 12 7 8c0 3 2 4 3 4-2-5 3-6 3-9Z"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5M5 8a8 8 0 0 1 13-3l2 3M4 16l2 3a8 8 0 0 0 13-3"/>',volume:'<path d="m11 5-6 4H2v6h3l6 4ZM15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/>',leaf:'<path d="M20 3C6 1 1 9 6 16s17 0 14-13ZM4 21 15 10"/>',chart:'<path d="M4 3v18h17M8 16v-4m5 4V8m5 8V5"/>'};
 const icon=(name,cls='')=>`<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||icons.spark}</svg>`;
 let storage; try {storage=window.localStorage;}catch{storage={getItem:()=>null,setItem:()=>{throw Error('Storage unavailable');}};}
+const cityEffects=createCityEffects(storage,toast);
 let alphabet='hiragana';
 try { if(storage.getItem('japanese-master-alphabet')==='katakana') alphabet='katakana'; } catch {}
 let {groups,kana,kanaMap,categories,ruleTips,questions}=alphabet==='katakana'?katakana:hiragana;
@@ -36,8 +39,8 @@ function shell(){
  <button class="nav-item" data-page="guide">${icon('book')}<span>Phương pháp học</span></button>
  </nav><div class="sidebar-card"><span class="sprout">${icon('leaf')}</span><strong>Mỗi ngày một chút.</strong><p>Một hành trình dài bắt đầu<br>từ những nét chữ nhỏ.</p><span class="japanese-note">いっぽ、いっぽ。</span></div>
  <div class="sidebar-bottom"><span class="avatar">B</span><div><strong>Bạn học tiếng Nhật</strong><small>Hành trình N5 của bạn</small></div><span class="online-dot"></span></div></aside>
- <div class="main-shell"><header class="topbar"><div class="breadcrumb">Góc học tập <span>/</span> <strong id="breadcrumb-current">Luyện tập</strong></div><div class="topbar-right"><span class="level-pill">JLPT N5</span><span class="daily-streak">${icon('flame')} <b id="header-streak">0</b><span> đúng liên tiếp</span></span></div></header>
- <main id="content"><section class="page-heading"><div><div class="eyebrow">CHẬM MÀ CHẮC · 少しずつ</div><h1>Hôm nay, cùng học ${alphabetName()}<span class="heading-dot">.</span></h1><p>Luyện đôi tay, nhớ mặt chữ. Tiến bộ hơn một chút mỗi ngày.</p></div><button class="secondary-button how-button" id="how-button">${icon('info')} Cách luyện tập</button></section>
+ <div class="main-shell"><header class="topbar"><div class="breadcrumb">Góc học tập <span>/</span> <strong id="breadcrumb-current">Luyện tập</strong></div><div class="topbar-right"><button class="effects-toggle" id="effects-toggle" type="button" aria-pressed="true">Hiệu ứng: Bật</button><span class="level-pill">JLPT N5</span><span class="daily-streak">${icon('flame')} <b id="header-streak">0</b><span> đúng liên tiếp</span></span></div></header>
+ <main id="content"><section class="page-heading"><div><div class="eyebrow">FORGOTTEN KANA CITY · 少しずつ</div><h1>Hôm nay, cùng học ${alphabetName()}<span class="heading-dot">.</span></h1><p>Thắp sáng từng ký tự. Tìm lại một thành phố lãng quên.</p></div><button class="secondary-button how-button" id="how-button">${icon('info')} Cách luyện tập</button></section>
  <section class="alphabet-panel" aria-label="Chọn bảng chữ"><div class="alphabet-picker">${[['hiragana','あ','Hiragana','Chữ mềm · nền tảng'],['katakana','ア','Katakana','Chữ cứng · từ mượn']].map(([id,glyph,title,desc])=>`<button data-alphabet="${id}" class="alphabet-option ${id===alphabet?'selected':''}" aria-pressed="${id===alphabet}"><span lang="ja">${glyph}</span><span><strong>${title}</strong><small>${desc}</small></span>${id===alphabet?icon('check'):''}</button>`).join('')}</div><p>Điểm, âm cần ôn và lịch SRS được lưu riêng cho từng bảng chữ.</p></section>
  <section class="stats-row" aria-label="Thống kê luyện tập">
  <div class="stat-card"><span class="stat-icon purple">${icon('spark')}</span><div><span>Tổng điểm</span><strong id="score">0 <small>điểm</small></strong></div><span class="stat-note">Mỗi câu đúng +10</span></div>
@@ -59,11 +62,11 @@ function shell(){
  <section class="srs-card" id="guide-section"><span class="mini-label">HỌC THÔNG MINH HƠN</span><div class="srs-illustration" aria-hidden="true"><span class="flashcard back">${alphabet==='katakana'?'ア':'あ'}</span><span class="flashcard front">${alphabet==='katakana'?'ア':'あ'}<small>a</small></span><span class="illustration-spark">✧</span></div><h2>Nhớ lâu, không học dồn.</h2><p>Ôn đúng lúc bạn sắp quên.<br>Khám phá phương pháp SRS<br>và học cùng Anki.</p><button id="open-guide">Tìm hiểu phương pháp ${icon('arrow')}</button></section>
  </aside></div><footer class="page-footer"><span>つづけよう。 <span>Cứ tiếp tục nhé, bạn đang làm rất tốt.</span></span><button id="manage-progress">Quản lý tiến độ</button></footer></main></div>
  <div id="toast" role="status"></div><dialog id="modal" aria-labelledby="modal-title"><button id="close-modal" class="modal-close icon-button" aria-label="Đóng">${icon('close')}</button><div id="modal-content"></div></dialog>`;
- bind();renderQuestion();renderStats();renderChart();
+ bind();renderQuestion();renderStats();renderChart();cityEffects.bind();
 }
 function renderQuestion(){
  answered=false;lastResult=null;
- const area=document.querySelector('#question-area');
+ const area=document.querySelector('#question-area');area.classList.remove('answer-is-correct','answer-is-wrong');
  if(!current){area.innerHTML=`<div class="empty-quiz">${icon('check')}<h3>Chưa có âm yếu trong nhóm này</h3><p>Thử nhóm khác hoặc tắt “Chỉ ôn âm yếu” để tiếp tục.</p><button class="primary-button" id="back-all">Luyện tất cả quy tắc ${icon('arrow')}</button></div>`;document.querySelector('#back-all').onclick=()=>{category='all';weakOnly=false;document.querySelector('#category').value='all';document.querySelector('#weak-only').checked=false;next();};return;}
  const categoryLabel=categories.find(([id])=>id===current.category)?.[1]||'Luyện ký tự';
  area.innerHTML=`<div class="question-display"><span class="question-tag">${categoryLabel}</span><p class="question-instruction">Gõ Romaji tương ứng với từ bên dưới</p><div class="kana-question ${current.text.length>6?'long-question':''}" lang="ja">${current.text}</div><div class="meaning">${current.meaning}</div></div>
@@ -77,10 +80,10 @@ let advanceTimer;
 function submit(event){
  event.preventDefault();if(answered){clearTimeout(advanceTimer);next();return;}
  const input=document.querySelector('#answer-input');if(!input.value.trim()){document.querySelector('#answer-feedback').textContent='Hãy nhập Romaji trước khi kiểm tra nhé.';input.focus();return;}
- const result=checkAnswer(current,input.value);lastResult=result;answered=true;recordAnswer(state,current,result);save();renderStats();renderChart();beep(result.correct);
+ const result=checkAnswer(current,input.value);lastResult=result;answered=true;const before=state.days[today()]||0;recordAnswer(state,current,result);save();renderStats();renderChart();beep(result.correct);cityEffects.answer(result.correct);if(before<state.goal&&(state.days[today()]||0)>=state.goal)cityEffects.goal(alphabet,today());
  input.readOnly=true;input.setAttribute('aria-invalid',String(!result.correct));document.querySelector('.answer-field').classList.add(result.correct?'correct':'incorrect');
  const feedback=document.querySelector('#answer-feedback');feedback.className=`answer-feedback ${result.correct?'success':'error'}`;
- feedback.innerHTML=result.correct?`${icon('check')} Chính xác! <strong>+10 điểm</strong> <span>Đang chuyển câu…</span>`:`<div><strong>Chưa đúng — cùng nhớ lại nhé.</strong><div class="correction">${result.parts.map(p=>`<span class="correction-part ${p.wrong?'wrong':''}"><b lang="ja">${p.key}</b><small>${p.reading}</small></span>`).join('')}</div><span>Đáp án: <b>${result.answer}</b>. Các âm tô đỏ đã được thêm vào bảng ôn tập.</span></div>`;
+ feedback.innerHTML=result.correct?`${icon('check')} Chính xác! <strong>+10 điểm</strong> <span>Đang chuyển câu…</span>`:`<div><strong><span aria-hidden="true">!</span> Chưa đúng — cùng nhớ lại nhé.</strong><div class="correction">${result.parts.map(p=>`<span class="correction-part ${p.wrong?'wrong':''}"><b lang="ja">${p.key}</b><small>${p.reading}</small></span>`).join('')}</div><span>Đáp án: <b>${result.answer}</b>. Các âm tô đỏ đã được thêm vào bảng ôn tập.</span></div>`;
  document.querySelector('#submit-answer').innerHTML=`Câu tiếp theo ${icon('arrow')}`;
  if(result.correct)advanceTimer=setTimeout(next,1100);
 }
@@ -106,7 +109,7 @@ function renderChart(){
  grid.className=`kana-grid ${chartTab==='combo'?'three-columns':''}`;
  let entries=group.rows.flatMap(row=>chartTab==='combo'?row:[...row,...Array(Math.max(0,5-row.length)).fill(null)]);
  if(chartWeak)entries=entries.filter(spec=>spec&&isWeak(state.kana[spec.split(':')[0]]));
- grid.innerHTML=entries.map(spec=>{if(!spec)return '<span class="kana-placeholder" aria-hidden="true">—</span>';const [key]=spec.split(':');const item=kanaMap[key];const progress=state.kana[key];const weak=isWeak(progress);const learned=progress?.run>=3;return `<button class="kana-cell ${weak?'is-weak':learned?'is-learned':progress?'is-practised':''}" data-kana="${key}" aria-label="${key}, ${item.options[0]}${weak?', cần ôn lại':learned?', đã nhớ':''}"><span lang="ja">${key}</span><small>${item.options[0]}</small>${weak?'<i aria-hidden="true"></i>':''}</button>`;}).join('')||'<p class="chart-empty">Không có âm cần ôn trong nhóm này. Thật tốt!</p>';
+ grid.innerHTML=entries.map(spec=>{if(!spec)return '<span class="kana-placeholder" aria-hidden="true">—</span>';const [key]=spec.split(':');const item=kanaMap[key];const progress=state.kana[key];const weak=isWeak(progress);const learned=progress?.run>=3;return `<button class="kana-cell ${weak?'is-weak':learned?'is-learned':progress?'is-practised':''}" data-kana="${key}" aria-label="${key}, ${item.options[0]}${weak?', cần ôn lại':learned?', đã nhớ':''}"><span lang="ja">${key}</span><small>${item.options[0]}</small>${weak?'<i aria-hidden="true">!</i>':learned?'<i aria-hidden="true">✓</i>':''}</button>`;}).join('')||'<p class="chart-empty">Không có âm cần ôn trong nhóm này. Thật tốt!</p>';
  grid.querySelectorAll('[data-kana]').forEach(button=>button.onclick=()=>showKana(button.dataset.kana));
 }
 function showModal(html){clearTimeout(advanceTimer);document.querySelector('#modal-content').innerHTML=html;document.querySelector('#modal').showModal();}
