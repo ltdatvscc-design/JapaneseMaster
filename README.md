@@ -1,6 +1,6 @@
 # Japanese Master
 
-Ứng dụng luyện gõ Romaji và ghi nhớ Hiragana, giao diện tiếng Việt, dùng được trên máy tính và điện thoại. Xây dựng bằng JavaScript, CSS và Vite; không cần tài khoản, API key hay cơ sở dữ liệu.
+Ứng dụng luyện gõ Romaji và ghi nhớ Hiragana và Katakana, giao diện tiếng Việt, dùng được trên máy tính và điện thoại. Xây dựng bằng JavaScript, CSS và Vite; không cần tài khoản, API key hay cơ sở dữ liệu.
 
 ## Chạy dự án
 
@@ -43,11 +43,12 @@ Có thể triển khai toàn bộ thư mục `dist/` lên một dịch vụ host
 
 ## Cấu trúc
 
-- `src/data.js`: bảng âm, từ vựng, cách gõ và quy tắc.
+- `src/data.js`: dữ liệu Hiragana.
+- `src/katakana.js`: dữ liệu Katakana, từ mượn, trường âm và các cặp dễ nhầm.
 - `src/engine.js`: chấm đáp án, đối chiếu âm sai, tiến độ và lịch ôn.
 - `src/main.js`: tương tác giao diện.
 - `src/style.css`, `src/fonts.css`: bố cục responsive và phông chữ cục bộ.
-- `tests/engine.test.js`: kiểm thử bằng Node.js test runner.
+- `tests/engine.test.js`, `tests/katakana.test.js`: kiểm thử bằng Node.js test runner.
 
 Phông chữ Be Vietnam Pro và Noto Sans JP được phân phối qua Fontsource theo giấy phép OFL. `fonts.css` chọn các phần phông tiếng Nhật được sử dụng trong bài học để giảm dung lượng.
 
@@ -63,3 +64,15 @@ Sau khi build, chạy `node scripts/export-standalone.mjs` để tạo `dist/Jap
 4. Chọn **Deploy**. Ứng dụng không cần biến môi trường hoặc API key.
 
 Những lần đẩy commit tiếp theo lên `main` sẽ tự triển khai lại nếu bạn bật Git integration của Vercel. Tiến độ học được lưu theo tên miền trên trình duyệt; dữ liệu từ tệp HTML dùng thử không tự chuyển sang tên miền Vercel.
+
+
+## Chế độ Katakana
+
+Chọn **Katakana** ở đầu trang để chuyển cả Quiz, bảng chữ, hướng dẫn và thống kê sang Katakana. Lựa chọn gần nhất được ghi nhớ khi tải lại trang.
+
+- 46 âm cơ bản, 25 biến âm, 33 âm ghép, 14 mục đặc biệt và 25 âm mượn mở rộng (143 mục); 53 từ/cụm từ minh họa, tổng 196 câu/thẻ luyện.
+- Trường âm: `コーヒー` nhận `koohii` hoặc `ko-hi-`; `スーパー` nhận `suupaa` hoặc `su-pa-`. Không nhận bỏ nguyên âm dài. Dấu `ー` đứng riêng gõ `-`.
+- Âm mượn: `ティ` nhận `ti/thi`, `ディ` nhận `di/dhi`, `トゥ` nhận `tu/twu`. Bảng hiện cách gõ IME; hướng dẫn giải thích các biến thể phiên âm được chấp nhận. Các từ minh họa âm mở rộng không được coi là toàn bộ từ vựng N5.
+- Có cẩm nang và 5 cặp dễ nhầm: シ/ツ, ソ/ン, ク/ケ, ヌ/ス, ワ/ウ.
+- Dữ liệu Hiragana cũ vẫn giữ ở `japanese-master-v1`; Katakana dùng `japanese-master-katakana-v1`. Điểm, chuỗi đúng, ngày luyện và lịch ôn độc lập. Đặt lại chỉ tác động bảng đang chọn; bản sao JSON ghi rõ bảng chữ trong tên tệp.
+- Khi không thể lưu localStorage, chuyển bảng vẫn giữ tiến độ trong phiên đang mở; đóng hoặc tải lại trang có thể mất dữ liệu chưa lưu.

@@ -9,14 +9,15 @@ export function distance(a, b) {
 export function checkAnswer(question, raw) {
   const input = normalize(raw).slice(0,120); const memo = new Map();
   function solve(index, pos) {
-    if(index === question.tokens.length) return {cost:input.length-pos, parts:[]};
+    if(index === question.tokens.length) return {cost:input.length-pos, normalCost:input.length-pos, parts:[]};
     const cacheKey=`${index}:${pos}`; if(memo.has(cacheKey)) return memo.get(cacheKey);
     let best = null;
     for(const reading of question.tokens[index].options) {
       for(let end=pos;end<=Math.min(input.length,pos+reading.length+4);end++) {
         const typed=input.slice(pos,end); const cost=distance(reading,typed); const rest=solve(index+1,end);
-        const candidate={cost:cost+rest.cost, parts:[{key:question.tokens[index].key,reading,typed,wrong:cost>0},...rest.parts]};
-        if(!best || candidate.cost<best.cost) best=candidate;
+        // For equally close spellings, attribute a missing doubled/long sound to its marker first.
+        const candidate={cost:cost+rest.cost, localCost:cost, normalCost:rest.normalCost+(['っ','ッ','ー'].includes(question.tokens[index].key)?0:cost), parts:[{key:question.tokens[index].key,reading,typed,wrong:cost>0},...rest.parts]};
+        if(!best || candidate.cost<best.cost || (candidate.cost===best.cost && (candidate.normalCost<best.normalCost || (candidate.normalCost===best.normalCost && candidate.localCost<best.localCost)))) best=candidate;
       }
     }
     memo.set(cacheKey,best);return best;
@@ -42,8 +43,8 @@ export function recordAnswer(state, question, result, now=Date.now()) {
   state.reviews[question.id]={level,due:now+delays[level]}; return state;
 }
 export function isWeak(item){return !!item && item.errors>0 && item.run<3;}
-export function pickQuestion(state,{category='all',weakOnly=false,previous=null,now=Date.now(),random=Math.random}={}){
-  let pool=questions.filter(q=>(category==='all'||q.category===category)&&(!weakOnly||q.tokens.some(t=>isWeak(state.kana[t.key]))));
+export function pickQuestion(state,{category='all',weakOnly=false,previous=null,now=Date.now(),random=Math.random,bank=questions}={}){
+  let pool=bank.filter(q=>(category==='all'||q.category===category)&&(!weakOnly||q.tokens.some(t=>isWeak(state.kana[t.key]))));
   if(!pool.length) return null;
   if(pool.length>1) pool=pool.filter(q=>q.id!==previous);
   const due=pool.filter(q=>state.reviews[q.id]?.due<=now);
@@ -54,9 +55,9 @@ export function pickQuestion(state,{category='all',weakOnly=false,previous=null,
   }
   return pool[Math.floor(random()*pool.length)];
 }
-export function loadProgress(storage){
+export function loadProgress(storage, key='japanese-master-v1'){
   try{
-    const parsed=JSON.parse(storage.getItem('japanese-master-v1'));
+    const parsed=JSON.parse(storage.getItem(key));
     if(!parsed||parsed.version!==1)return emptyProgress();
     const base=emptyProgress();
     for(const key of ['attempts','correct','streak','bestStreak','score','goal']) if(Number.isFinite(parsed[key])&&parsed[key]>=0)base[key]=parsed[key];
